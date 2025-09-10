@@ -167,3 +167,4 @@
 /home/coder/AzureAPI/obj/Debug/net8.0/AzureAPI.pdb
 /home/coder/AzureAPI/obj/Debug/net8.0/AzureAPI.genruntimeconfig.cache
 /home/coder/AzureAPI/obj/Debug/net8.0/ref/AzureAPI.dll
+/home/coder/AzureAPI/obj/Debug/net8.0/AzureAPI.sourcelink.json
