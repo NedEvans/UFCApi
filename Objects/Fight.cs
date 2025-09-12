@@ -115,6 +115,16 @@ public class Fight
 
     [Column(TypeName = "SMALLINT")]  // DB type
     public short BlueOdds { get; set; } = 0; // Moneyline odds for the blue corner
+
+    [Column(TypeName = "tinyint")]
+    public CardType CardType { get; set; } = CardType.MainCard; // Type of fight card (Main Card, Prelims, Early Prelims)
+}
+
+public enum CardType : byte
+{
+    Prelims = 1,
+    MainCard = 0,
+    EarlyPrelims = 2
 }
 
 public enum MethodOfVictory : byte
