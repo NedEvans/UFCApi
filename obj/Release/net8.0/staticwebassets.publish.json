@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "nDhxv5bbzlIPsj934yqSoONTw/8Iyv6YEc+3tC1DIVU=",
-  "Source": "AzureAPI",
-  "BasePath": "_content/AzureAPI",
-  "Mode": "Default",
-  "ManifestType": "Publish",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"NfVt07ESJSmALTIctLvQRZkcrU4QA2VQqWxqjVcuNOQ=","Source":"AzureAPI","BasePath":"_content/AzureAPI","Mode":"Default","ManifestType":"Publish","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}
