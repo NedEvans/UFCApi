@@ -167,6 +167,7 @@
 /home/coder/AzureAPI/obj/Debug/net8.0/AzureAPI.pdb
 /home/coder/AzureAPI/obj/Debug/net8.0/AzureAPI.genruntimeconfig.cache
 /home/coder/AzureAPI/obj/Debug/net8.0/ref/AzureAPI.dll
+<<<<<<< HEAD
 C:\UFCApi\bin\Debug\net8.0\appsettings.Development.json
 C:\UFCApi\bin\Debug\net8.0\appsettings.json
 C:\UFCApi\bin\Debug\net8.0\AzureAPI.staticwebassets.endpoints.json
@@ -339,3 +340,6 @@ C:\UFCApi\obj\Debug\net8.0\refint\AzureAPI.dll
 C:\UFCApi\obj\Debug\net8.0\AzureAPI.pdb
 C:\UFCApi\obj\Debug\net8.0\AzureAPI.genruntimeconfig.cache
 C:\UFCApi\obj\Debug\net8.0\ref\AzureAPI.dll
+=======
+/home/coder/AzureAPI/obj/Debug/net8.0/AzureAPI.sourcelink.json
+>>>>>>> daf300a805a3d532f7af23ebb9629b0c0abd04c8
