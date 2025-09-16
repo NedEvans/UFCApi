@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using AzureAPI.Objects;
+using UFCApi.CSVObjects;
 
 namespace AzureAPI.DB
 {
@@ -14,8 +15,34 @@ namespace AzureAPI.DB
         public DbSet<Fight> Fights { get; set; } = null!;
         public DbSet<Event> Events { get; set; } = null!;
 
+        public DbSet<EventCsv> EventsCsv { get; set; } = null!;
+        public DbSet<FighterCsv> FightersCsv { get; set; } = null!;
+        public DbSet<FightCsv> FightsCsv { get; set; } = null!;
+        public DbSet<RoundCsv> RoundsCsv { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<RoundCsv>()
+                .HasKey(r => new { r.FightId, r.FighterId, r.Round });
+
+            modelBuilder.Entity<FightCsv>()
+                .HasOne(f => f.Fighter1)
+                .WithMany()
+                .HasForeignKey(f => f.Fighter1Id)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FightCsv>()
+                .HasOne(f => f.Fighter2)
+                .WithMany()
+                .HasForeignKey(f => f.Fighter2Id)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FightCsv>()
+                .HasOne(f => f.Winner)
+                .WithMany()
+                .HasForeignKey(f => f.WinnerId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             base.OnModelCreating(modelBuilder);
 
             // Fighter enums
