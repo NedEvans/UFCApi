@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AzureAPI.DB;
 using UFCApi.CSVObjects;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AzureAPI.Controllers
+namespace UFCApi.DB
 {
     [ApiController]
     [Route("[controller]")]
@@ -19,47 +18,90 @@ namespace AzureAPI.Controllers
             _context = context;
         }
 
+        // GET: /fights
         [HttpGet("fights")]
         public async Task<IActionResult> GetFights(
-            [FromQuery] string? EventId,
-            [FromQuery] string? FighterId,
-            [FromQuery] DateTime? DateFrom,
-            [FromQuery] DateTime? DateTo,
-            [FromQuery] string? WeightClass,
-            [FromQuery] int? Round,
-            [FromQuery] string? Result)
+            [FromQuery] string? eventId,
+            [FromQuery] string? fighterId,
+            [FromQuery] DateTime? dateFrom,
+            [FromQuery] DateTime? dateTo,
+            [FromQuery] string? weightClass,
+            [FromQuery] int? round,
+            [FromQuery] string? result,
+            [FromQuery] bool? titleFight,
+            [FromQuery] string? referee,
+            [FromQuery] string? sortBy = "EventDate",
+            [FromQuery] string? order = "desc",
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 50)
         {
-            var query = _context.FightsCsv.AsQueryable();
+            var query = _context.FightsCsv
+                .Include(f => f.Event)
+                .AsQueryable();
 
-            if (!string.IsNullOrEmpty(EventId))
-                query = query.Where(f => f.EventId == EventId);
+            // Filters
+            if (!string.IsNullOrEmpty(eventId))
+                query = query.Where(f => f.EventId == eventId);
 
-            if (!string.IsNullOrEmpty(FighterId))
-                query = query.Where(f => f.Fighter1Id == FighterId || f.Fighter2Id == FighterId);
+            if (!string.IsNullOrEmpty(fighterId))
+                query = query.Where(f => f.Fighter1Id == fighterId || f.Fighter2Id == fighterId);
 
-            if (DateFrom.HasValue)
-                query = query.Where(f => f.Event != null && f.Event.EventDate >= DateFrom);
+            if (dateFrom.HasValue)
+                query = query.Where(f => f.Event != null && f.Event.EventDate >= dateFrom);
 
-            if (DateTo.HasValue)
-                query = query.Where(f => f.Event != null && f.Event.EventDate <= DateTo);
+            if (dateTo.HasValue)
+                query = query.Where(f => f.Event != null && f.Event.EventDate <= dateTo);
 
-            if (!string.IsNullOrEmpty(WeightClass))
-                query = query.Where(f => f.WeightClass == WeightClass);
+            if (!string.IsNullOrEmpty(weightClass))
+                query = query.Where(f => EF.Functions.Like(f.WeightClass, $"%{weightClass}%"));
 
-            if (Round.HasValue)
-                query = query.Where(f => f.FinishRound == Round);
+            if (round.HasValue)
+                query = query.Where(f => f.FinishRound == round);
 
-            if (!string.IsNullOrEmpty(Result))
-                query = query.Where(f => f.Result == Result);
+            if (!string.IsNullOrEmpty(result))
+                query = query.Where(f => EF.Functions.Like(f.Result, $"%{result}%"));
 
-            var fights = await query.ToListAsync();
-            return Ok(fights);
+            if (titleFight.HasValue)
+                query = query.Where(f => f.TitleFight == titleFight);
+
+            if (!string.IsNullOrEmpty(referee))
+                query = query.Where(f => EF.Functions.Like(f.Referee, $"%{referee}%"));
+
+            // Sorting
+            query = (sortBy?.ToLower(), order?.ToLower()) switch
+            {
+                ("eventdate", "asc") => query.OrderBy(f => f.Event!.EventDate),
+                ("eventdate", "desc") => query.OrderByDescending(f => f.Event!.EventDate),
+                ("weightclass", "asc") => query.OrderBy(f => f.WeightClass),
+                ("weightclass", "desc") => query.OrderByDescending(f => f.WeightClass),
+                ("round", "asc") => query.OrderBy(f => f.FinishRound),
+                ("round", "desc") => query.OrderByDescending(f => f.FinishRound),
+                _ => query.OrderByDescending(f => f.Event!.EventDate) // default
+            };
+
+            // Pagination
+            var totalCount = await query.CountAsync();
+            var fights = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                Results = fights
+            });
         }
 
+        // GET: /fights/{id}
         [HttpGet("fights/{id}")]
         public async Task<IActionResult> GetFight(string id)
         {
-            var fight = await _context.FightsCsv.FindAsync(id);
+            var fight = await _context.FightsCsv
+                .Include(f => f.Event)
+                .FirstOrDefaultAsync(f => f.FightId == id);
 
             if (fight == null)
             {
@@ -69,6 +111,7 @@ namespace AzureAPI.Controllers
             return Ok(fight);
         }
 
+        // POST: /fights
         [HttpPost("fights")]
         public async Task<IActionResult> CreateFight(FightCsv fight)
         {
@@ -78,6 +121,7 @@ namespace AzureAPI.Controllers
             return CreatedAtAction(nameof(GetFight), new { id = fight.FightId }, fight);
         }
 
+        // PUT: /fights/{id}
         [HttpPut("fights/{id}")]
         public async Task<IActionResult> UpdateFight(string id, FightCsv fight)
         {
@@ -107,6 +151,7 @@ namespace AzureAPI.Controllers
             return NoContent();
         }
 
+        // DELETE: /fights/{id}
         [HttpDelete("fights/{id}")]
         public async Task<IActionResult> DeleteFight(string id)
         {
@@ -121,5 +166,90 @@ namespace AzureAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("diagnose-and-fix-fights")]
+        public async Task<IActionResult> DiagnoseAndFixFights()
+        {
+            var fights = await _context.FightsCsv.ToListAsync();
+            var fightsWithEmptyFields = new List<object>();
+
+            foreach (var fight in fights)
+            {
+                var emptyFields = new List<string>();
+
+                if (string.IsNullOrWhiteSpace(fight.Referee))
+                {
+                    fight.Referee = "unknown";
+                    emptyFields.Add(nameof(fight.Referee));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.WeightClass))
+                {
+                    fight.WeightClass = "unknown";
+                    emptyFields.Add(nameof(fight.WeightClass));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.Gender))
+                {
+                    fight.Gender = "unknown";
+                    emptyFields.Add(nameof(fight.Gender));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.Result))
+                {
+                    fight.Result = "unknown";
+                    emptyFields.Add(nameof(fight.Result));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.ResultDetails))
+                {
+                    fight.ResultDetails = "unknown";
+                    emptyFields.Add(nameof(fight.ResultDetails));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.FinishTime))
+                {
+                    fight.FinishTime = "unknown";
+                    emptyFields.Add(nameof(fight.FinishTime));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.TimeFormat))
+                {
+                    fight.TimeFormat = "unknown";
+                    emptyFields.Add(nameof(fight.TimeFormat));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.Scores1))
+                {
+                    fight.Scores1 = "unknown";
+                    emptyFields.Add(nameof(fight.Scores1));
+                }
+
+                if (string.IsNullOrWhiteSpace(fight.Scores2))
+                {
+                    fight.Scores2 = "unknown";
+                    emptyFields.Add(nameof(fight.Scores2));
+                }
+
+                if (emptyFields.Any())
+                {
+                    fightsWithEmptyFields.Add(new
+                    {
+                        fight.FightId,
+                        EmptyFields = emptyFields
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                TotalFights = fights.Count,
+                FightsWithEmptyFields = fightsWithEmptyFields.Count,
+                Examples = fightsWithEmptyFields.Take(10)
+            });
+        }
+
     }
 }

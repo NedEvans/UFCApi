@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using AzureAPI.DB;
+using UFCApi.DB;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
