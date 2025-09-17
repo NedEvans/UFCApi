@@ -31,7 +31,7 @@ namespace UFCApi.CSVObjects
         public FighterCsv? Fighter2 { get; set; }
 
         [StringLength(50)]
-        public string WinnerId { get; set; } = string.Empty;
+        public string? WinnerId { get; set; }
         public FighterCsv? Winner { get; set; }
 
         public int NumRounds { get; set; }
