@@ -1,0 +1,22 @@
+# Build outputs
+bin/
+obj/
+
+# User-specific files
+*.user
+*.rsuser
+
+# VS Code settings
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+# Keep launch.json out of Git (contains secrets)
+.vscode/launch.json
+
+# Secrets
+*.env
+secrets.json
+
+# OS files
+.DS_Store
+Thumbs.db

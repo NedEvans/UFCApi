@@ -2,21 +2,27 @@ using Microsoft.EntityFrameworkCore;
 using UFCApi.DB;
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add DbContext with connection string
+// Add DbContext with connection string=====================================
+var dbServer = Environment.GetEnvironmentVariable("dbServer");
+var dbName = Environment.GetEnvironmentVariable("dbName");
+var dbPassword = Environment.GetEnvironmentVariable("dbPassword");
+
+var connString = $"Data Source={dbServer}; Initial Catalog={dbName};User ID=sa;Password={dbPassword}; Encrypt=False; TrustServerCertificate=True";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        connString,
         sqlOptions => sqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,                // how many retries
             maxRetryDelay: TimeSpan.FromSeconds(20), // wait between
             errorNumbersToAdd: null          // custom SQL errors, usually leave null
         )
     ));
+//==========================================================================
 
 builder.Services.AddControllers();
 
@@ -30,6 +36,8 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowCredentials());
 });
+
+
 
 var app = builder.Build();
 

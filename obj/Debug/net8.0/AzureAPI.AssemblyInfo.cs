@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("91380513-7de4-4137-a0ab-ab0f1086d954")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("AzureAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+87837a4a62d8b474932c9859b948f8238cbe2307")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9eccc01c4fa02d8649218af17c909521f0b3202c")]
 [assembly: System.Reflection.AssemblyProductAttribute("AzureAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AzureAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
