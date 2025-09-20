@@ -19,7 +19,7 @@ namespace UFCApi.DB
         }
 
         // GET: /fights
-        [HttpGet("fights")]
+        [HttpGet]
         public async Task<IActionResult> GetFights(
             [FromQuery] string? eventId,
             [FromQuery] string? fighterId,
@@ -96,7 +96,7 @@ namespace UFCApi.DB
         }
 
         // GET: /fights/{id}
-        [HttpGet("fights/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetFight(string id)
         {
             var fight = await _context.FightsCsv
@@ -112,7 +112,7 @@ namespace UFCApi.DB
         }
 
         // POST: /fights
-        [HttpPost("fights")]
+        [HttpPost]
         public async Task<IActionResult> CreateFight(FightCsv fight)
         {
             _context.FightsCsv.Add(fight);
@@ -122,7 +122,7 @@ namespace UFCApi.DB
         }
 
         // PUT: /fights/{id}
-        [HttpPut("fights/{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateFight(string id, FightCsv fight)
         {
             if (id != fight.FightId)
@@ -152,7 +152,7 @@ namespace UFCApi.DB
         }
 
         // DELETE: /fights/{id}
-        [HttpDelete("fights/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFight(string id)
         {
             var fight = await _context.FightsCsv.FindAsync(id);
@@ -165,90 +165,6 @@ namespace UFCApi.DB
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        [HttpPost("diagnose-and-fix-fights")]
-        public async Task<IActionResult> DiagnoseAndFixFights()
-        {
-            var fights = await _context.FightsCsv.ToListAsync();
-            var fightsWithEmptyFields = new List<object>();
-
-            foreach (var fight in fights)
-            {
-                var emptyFields = new List<string>();
-
-                if (string.IsNullOrWhiteSpace(fight.Referee))
-                {
-                    fight.Referee = "unknown";
-                    emptyFields.Add(nameof(fight.Referee));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.WeightClass))
-                {
-                    fight.WeightClass = "unknown";
-                    emptyFields.Add(nameof(fight.WeightClass));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.Gender))
-                {
-                    fight.Gender = "unknown";
-                    emptyFields.Add(nameof(fight.Gender));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.Result))
-                {
-                    fight.Result = "unknown";
-                    emptyFields.Add(nameof(fight.Result));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.ResultDetails))
-                {
-                    fight.ResultDetails = "unknown";
-                    emptyFields.Add(nameof(fight.ResultDetails));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.FinishTime))
-                {
-                    fight.FinishTime = "unknown";
-                    emptyFields.Add(nameof(fight.FinishTime));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.TimeFormat))
-                {
-                    fight.TimeFormat = "unknown";
-                    emptyFields.Add(nameof(fight.TimeFormat));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.Scores1))
-                {
-                    fight.Scores1 = "unknown";
-                    emptyFields.Add(nameof(fight.Scores1));
-                }
-
-                if (string.IsNullOrWhiteSpace(fight.Scores2))
-                {
-                    fight.Scores2 = "unknown";
-                    emptyFields.Add(nameof(fight.Scores2));
-                }
-
-                if (emptyFields.Any())
-                {
-                    fightsWithEmptyFields.Add(new
-                    {
-                        fight.FightId,
-                        EmptyFields = emptyFields
-                    });
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                TotalFights = fights.Count,
-                FightsWithEmptyFields = fightsWithEmptyFields.Count,
-                Examples = fightsWithEmptyFields.Take(10)
-            });
         }
 
     }

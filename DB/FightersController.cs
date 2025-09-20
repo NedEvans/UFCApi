@@ -19,7 +19,7 @@ namespace UFCApi.DB
         }
 
         // GET: /fighters
-        [HttpGet("fighters")]
+        [HttpGet]
         public async Task<IActionResult> GetFighters(
             [FromQuery] string? firstName,
             [FromQuery] string? lastName,
@@ -89,7 +89,7 @@ namespace UFCApi.DB
         }
 
         // GET: /fighters/{id}
-        [HttpGet("fighters/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetFighter(string id)
         {
             var fighter = await _context.FightersCsv.FindAsync(id);
@@ -103,7 +103,7 @@ namespace UFCApi.DB
         }
 
         // POST: /fighters
-        [HttpPost("fighters")]
+        [HttpPost]
         public async Task<IActionResult> CreateFighter(FighterCsv fighter)
         {
             _context.FightersCsv.Add(fighter);
@@ -113,7 +113,7 @@ namespace UFCApi.DB
         }
 
         // PUT: /fighters/{id}
-        [HttpPut("fighters/{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateFighter(string id, FighterCsv fighter)
         {
             if (id != fighter.FighterId)
@@ -143,7 +143,7 @@ namespace UFCApi.DB
         }
 
         // DELETE: /fighters/{id}
-        [HttpDelete("fighters/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFighter(string id)
         {
             var fighter = await _context.FightersCsv.FindAsync(id);

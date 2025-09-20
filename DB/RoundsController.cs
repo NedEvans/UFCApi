@@ -20,7 +20,7 @@ namespace UFCApi.DB
         }
 
         // GET /rounds
-        [HttpGet("rounds")]
+        [HttpGet]
         public async Task<IActionResult> GetRounds(
             [FromQuery] string? fightId,
             [FromQuery] string? fighterId,
@@ -49,7 +49,7 @@ namespace UFCApi.DB
         }
 
         // GET /rounds/{fightId}/{fighterId}/{round}
-        [HttpGet("rounds/{fightId}/{fighterId}/{round}")]
+        [HttpGet("{fightId}/{fighterId}/{round}")]
         public async Task<IActionResult> GetRound(string fightId, string fighterId, int round)
         {
             var aRound = await _context.RoundsCsv.FindAsync(fightId, fighterId, round);
@@ -61,7 +61,7 @@ namespace UFCApi.DB
         }
 
         // POST /rounds
-        [HttpPost("rounds")]
+        [HttpPost]
         public async Task<IActionResult> CreateRound(RoundCsv aRound)
         {
             // Ensure referenced fight and fighter exist
@@ -84,7 +84,7 @@ namespace UFCApi.DB
         }
 
         // PUT /rounds/{fightId}/{fighterId}/{round}
-        [HttpPut("rounds/{fightId}/{fighterId}/{round}")]
+        [HttpPut("{fightId}/{fighterId}/{round}")]
         public async Task<IActionResult> UpdateRound(string fightId, string fighterId, int round, RoundCsv aRound)
         {
             if (fightId != aRound.FightId || fighterId != aRound.FighterId || round != aRound.Round)
@@ -112,7 +112,7 @@ namespace UFCApi.DB
         }
 
         // DELETE /rounds/{fightId}/{fighterId}/{round}
-        [HttpDelete("rounds/{fightId}/{fighterId}/{round}")]
+        [HttpDelete("{fightId}/{fighterId}/{round}")]
         public async Task<IActionResult> DeleteRound(string fightId, string fighterId, int round)
         {
             var aRound = await _context.RoundsCsv.FindAsync(fightId, fighterId, round);
@@ -123,78 +123,6 @@ namespace UFCApi.DB
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        // GET /rounds/diagnose
-        [HttpGet("rounds/diagnose")]
-        public async Task<IActionResult> DiagnoseRounds()
-        {
-            var rounds = await _context.RoundsCsv.ToListAsync();
-            var issues = new List<object>();
-
-            foreach (var r in rounds)
-            {
-                var emptyFields = new List<string>();
-                if (string.IsNullOrWhiteSpace(r.FightId)) emptyFields.Add("FightId");
-                if (string.IsNullOrWhiteSpace(r.FighterId)) emptyFields.Add("FighterId");
-                if (string.IsNullOrWhiteSpace(r.CtrlTime)) emptyFields.Add("CtrlTime");
-
-                if (emptyFields.Any())
-                {
-                    issues.Add(new
-                    {
-                        fightId = r.FightId,
-                        fighterId = r.FighterId,
-                        round = r.Round,
-                        emptyFields
-                    });
-                }
-            }
-
-            return Ok(new
-            {
-                totalRounds = rounds.Count,
-                roundsWithIssues = issues.Count,
-                examples = issues.Take(10)
-            });
-        }
-
-        // POST /rounds/fix
-        [HttpPost("rounds/fix")]
-        public async Task<IActionResult> FixRounds()
-        {
-            var rounds = await _context.RoundsCsv.ToListAsync();
-            var fixedCount = 0;
-
-            foreach (var r in rounds)
-            {
-                var changed = false;
-
-                if (string.IsNullOrWhiteSpace(r.FightId))
-                {
-                    r.FightId = "unknown";
-                    changed = true;
-                }
-
-                if (string.IsNullOrWhiteSpace(r.FighterId))
-                {
-                    r.FighterId = "unknown";
-                    changed = true;
-                }
-
-                if (string.IsNullOrWhiteSpace(r.CtrlTime))
-                {
-                    r.CtrlTime = "unknown";
-                    changed = true;
-                }
-
-                if (changed)
-                    _context.RoundsCsv.Update(r);
-            }
-
-            fixedCount = await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Fix completed", recordsUpdated = fixedCount });
         }
     }
 }
