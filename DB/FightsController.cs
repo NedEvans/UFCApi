@@ -20,7 +20,7 @@ namespace UFCApi.DB
 
         // GET: /fights
         [HttpGet]
-        public async Task<IActionResult> GetFights(
+        public async Task<ActionResult<PaginatedFights>> GetFights(
             [FromQuery] string? eventId,
             [FromQuery] string? fighterId,
             [FromQuery] DateTime? dateFrom,
@@ -30,10 +30,10 @@ namespace UFCApi.DB
             [FromQuery] string? result,
             [FromQuery] bool? titleFight,
             [FromQuery] string? referee,
-            [FromQuery] string? sortBy = "EventDate",
+            [FromQuery] string? sortBy = "eventdate",
             [FromQuery] string? order = "desc",
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 50)
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
             var query = _context.FightsCsv
                 .Include(f => f.Event)
@@ -67,6 +67,9 @@ namespace UFCApi.DB
             if (!string.IsNullOrEmpty(referee))
                 query = query.Where(f => EF.Functions.Like(f.Referee, $"%{referee}%"));
 
+            // Get total count before pagination
+            var totalCount = await query.CountAsync();
+
             // Sorting
             query = (sortBy?.ToLower(), order?.ToLower()) switch
             {
@@ -78,7 +81,18 @@ namespace UFCApi.DB
                 ("round", "desc") => query.OrderByDescending(f => f.FinishRound),
                 _ => query.OrderByDescending(f => f.Event!.EventDate) // default
             };
-            return Ok(await query.ToListAsync());
+
+            // Apply pagination
+            var fights = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PaginatedFights
+            {
+                Fights = fights,
+                TotalCount = totalCount
+            };
         }
 
         // GET: /fights/{id}
