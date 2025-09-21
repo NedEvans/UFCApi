@@ -6,7 +6,7 @@ using UFCApi.CSVObjects;
 namespace UFCApi.DB
 {
     [ApiController]
-    [Route("events")]
+    [Route("[controller]")]
     public class EventsController : ControllerBase
     {
         private readonly AppDbContext _context;

@@ -31,7 +31,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         policy => policy
-            .WithOrigins("https://app.nedevans.au")
+            .WithOrigins("https://ufc.nedevans.au")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
@@ -51,8 +51,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.Urls.Add("http://0.0.0.0:8080");
-//app.Urls.Add("http://0.0.0.0:5227");
+app.Urls.Add("http://0.0.0.0:5227");
 app.UseHttpsRedirection();
 
 app.MapControllers();
