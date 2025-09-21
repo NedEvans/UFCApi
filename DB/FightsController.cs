@@ -78,21 +78,7 @@ namespace UFCApi.DB
                 ("round", "desc") => query.OrderByDescending(f => f.FinishRound),
                 _ => query.OrderByDescending(f => f.Event!.EventDate) // default
             };
-
-            // Pagination
-            var totalCount = await query.CountAsync();
-            var fights = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new
-            {
-                Page = page,
-                PageSize = pageSize,
-                TotalCount = totalCount,
-                Results = fights
-            });
+            return Ok(await query.ToListAsync());
         }
 
         // GET: /fights/{id}

@@ -72,20 +72,7 @@ namespace UFCApi.DB
             if (maxNcDq.HasValue)
                 query = query.Where(f => f.FighterNcDq <= maxNcDq.Value);
 
-            // Pagination
-            var totalCount = await query.CountAsync();
-            var fighters = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new
-            {
-                Page = page,
-                PageSize = pageSize,
-                TotalCount = totalCount,
-                Results = fighters
-            });
+            return Ok(await query.ToListAsync());
         }
 
         // GET: /fighters/{id}

@@ -38,14 +38,8 @@ namespace UFCApi.DB
 
             if (round.HasValue)
                 query = query.Where(r => r.Round == round);
-
-            var total = await query.CountAsync();
-            var rounds = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new { total, page, pageSize, results = rounds });
+            
+            return Ok(await query.ToListAsync());
         }
 
         // GET /rounds/{fightId}/{fighterId}/{round}
